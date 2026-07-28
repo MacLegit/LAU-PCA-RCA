@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAU, RCA e PCA — Licenciamento Ambiental Simplificado</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#1b1d1a;
+    --paper:#faf9f6;
+    --line:#dcdad2;
+    --forest:#2f4f3e;
+    --forest-soft:#e9efe9;
+    --muted:#6b6f66;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{
+    border-bottom:1px solid var(--line);
+    padding:56px 24px 40px;
+  }
+  .header-inner{max-width:760px;margin:0 auto;}
+  .protocol{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--forest);
+    border:1px solid var(--forest);
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:2px;
+    margin-bottom:20px;
+  }
+  h1{
+    font-size:2.1rem;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    margin-bottom:10px;
+  }
+  .subtitle{color:var(--muted);font-size:1.02rem;margin-bottom:24px;}
+  nav{display:flex;flex-wrap:wrap;gap:20px;}
+  nav a{
+    color:var(--ink);
+    text-decoration:none;
+    font-size:0.92rem;
+    font-weight:500;
+    border-bottom:1px solid transparent;
+    transition:border-color .15s;
+  }
+  nav a:hover{border-color:var(--forest);}
+
+  main{max-width:760px;margin:0 auto;padding:48px 24px 0;}
+
+  .card{
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:32px;
+    margin-bottom:24px;
+  }
+  .card-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--forest);
+    margin-bottom:8px;
+  }
+  .card h2{font-size:1.25rem;font-weight:700;margin-bottom:14px;}
+  .card p{margin-bottom:10px;}
+  .card p:last-child{margin-bottom:0;}
+
+  .flow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.86rem;
+    background:var(--forest-soft);
+    border-left:2px solid var(--forest);
+    padding:12px 16px;
+    margin:16px 0;
+  }
+
+  ul.checklist{margin:12px 0 0 18px;}
+  ul.checklist li{margin-bottom:8px;position:relative;padding-left:6px;}
+  ul.checklist li::marker{color:var(--forest);}
+
+  .tip{
+    font-size:0.92rem;
+    color:var(--muted);
+    border-top:1px solid var(--line);
+    margin-top:16px;
+    padding-top:14px;
+  }
+  .tip strong{color:var(--ink);}
+
+  /* Form */
+  .form-section{
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:40px 32px;
+    margin:40px 0 56px;
+  }
+  .form-section h2{font-size:1.3rem;font-weight:700;margin-bottom:6px;}
+  .form-lead{color:var(--muted);margin-bottom:28px;font-size:0.95rem;}
+
+  .steps-indicator{display:flex;gap:8px;margin-bottom:32px;}
+  .step-pill{
+    flex:1;
+    text-align:center;
+    padding:8px 4px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.75rem;
+    letter-spacing:0.03em;
+    color:var(--muted);
+    border-bottom:2px solid var(--line);
+  }
+  .step-pill.active{color:var(--forest);border-color:var(--forest);font-weight:600;}
+  .step-pill.done{color:var(--ink);border-color:var(--forest);}
+
+  .form-step{display:none;}
+  .form-step.active{display:block;animation:fadein .2s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .field-group{margin-bottom:16px;}
+  .field-group label{
+    display:block;
+    font-size:0.85rem;
+    font-weight:600;
+    margin-bottom:6px;
+  }
+  .field-group input,
+  .field-group select,
+  .field-group textarea{
+    width:100%;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:inherit;
+    font-size:0.95rem;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field-group input:focus,
+  .field-group select:focus,
+  .field-group textarea:focus{
+    outline:2px solid var(--forest);
+    outline-offset:1px;
+    border-color:var(--forest);
+  }
+  .field-group textarea{resize:vertical;min-height:80px;}
+  .field-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .field-row .field-group{flex:1 1 220px;}
+  .error-msg{color:#a3372b;font-size:0.8rem;margin-top:4px;display:none;}
+
+  .btn{
+    font-family:inherit;
+    font-weight:600;
+    font-size:0.92rem;
+    padding:11px 22px;
+    border-radius:3px;
+    border:1px solid var(--forest);
+    cursor:pointer;
+    transition:background .15s,color .15s;
+  }
+  .btn-primary{background:var(--forest);color:#fff;}
+  .btn-primary:hover{background:#243e31;}
+  .btn-secondary{background:transparent;color:var(--ink);border-color:var(--line);}
+  .btn-secondary:hover{border-color:var(--forest);}
+  .btn-row{display:flex;gap:12px;margin-top:24px;}
+
+  .summary-box{
+    font-size:0.92rem;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px 20px;
+    margin-bottom:20px;
+  }
+  .summary-box div{margin-bottom:6px;}
+  .summary-box strong{color:var(--forest);}
+
+  .report-preview{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:20px;
+    white-space:pre-wrap;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.82rem;
+    max-height:380px;
+    overflow-y:auto;
+    margin-bottom:18px;
+    line-height: 1.5;
+  }
+  #telegramStatus, #downloadStatus{font-size:0.86rem;font-weight:600;margin-bottom:6px;}
+  .success-badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--forest);
+    border:1px solid var(--forest);
+    padding:4px 10px;
+    border-radius:2px;
+    margin-bottom:16px;
+  }
+
+  .payment-box {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+  }
+  .payment-box h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--forest);
+  }
+
+  @media (max-width:600px){
+    header{padding:40px 20px 32px;}
+    h1{font-size:1.6rem;}
+    main{padding:32px 16px 0;}
+    .card,.form-section{padding:24px 18px;}
+    .btn-row{flex-direction:column;}
+    .btn{width:100%;text-align:center;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>LAU, RCA e PCA</h1>
+    <p class="subtitle">Licenciamento ambiental simplificado em fase única — Modelo Unificado Completo</p>
+    <nav>
+      <a href="#lau">O que é a LAU</a>
+      <a href="#quando">Quando se aplica</a>
+      <a href="#rca-pca">RCA + PCA</a>
+      <a href="#relatorio">Solicitar relatório</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="card" id="lau">
+    <div class="card-label">Licença Ambiental Única</div>
+    <h2>O que é a LAU?</h2>
+    <p>Autorização de instalação e operação em uma única etapa.</p>
+    <div class="flow">1. Requerimento → 2. RCA + PCA → 3. Análise → 4. Emissão da LAU</div>
+    <ul class="checklist">
+      <li><strong>Modalidade:</strong> fase única</li>
+      <li><strong>Estudos exigidos:</strong> RCA + PCA</li>
+      <li><strong>Responsável técnico:</strong> profissional habilitado com ART</li>
+    </ul>
+  </section>
+
+  <section class="card" id="quando">
+    <div class="card-label">Aplicabilidade</div>
+    <h2>Quando se aplica?</h2>
+    <p>Empreendimentos de menor complexidade e menor potencial poluidor.</p>
+    <ul class="checklist">
+      <li>Pequenas indústrias de baixo impacto</li>
+      <li>Postos de combustível (reformas e ampliações de menor porte)</li>
+      <li>Loteamentos urbanos de pequeno porte</li>
+      <li>Pátios logísticos e centros de distribuição</li>
+      <li>Comércios e serviços com infraestrutura simplificada</li>
+      <li>Projetos agropecuários de baixa complexidade</li>
+    </ul>
+  </section>
+
+  <section class="card" id="rca-pca">
+    <div class="card-label">Relatório e Plano de Controle Ambiental</div>
+    <h2>RCA + PCA</h2>
+    <p>Os dois estudos técnicos exigidos pela LAU integrados em um modelo unificado completo.</p>
+    <div class="flow">RCA → Caracterização do empreendimento, diagnósticos e impactos<br>PCA → Programas ambientais, controles, monitoramento e contingência</div>
+    <ul class="checklist">
+      <li><strong>RCA</strong> — diagnóstico do meio físico, biótico e socioeconômico + impactos</li>
+      <li><strong>PCA</strong> — planos de controle de efluentes, resíduos, emissões e monitoramento</li>
+    </ul>
+  </section>
+
+  <section class="form-section" id="relatorio">
+    <h2>Solicitar relatório unificado completo</h2>
+    <p class="form-lead">Preencha os dados do empreendimento para gerar o Modelo Unificado Completo (RCA + PCA + LAU) e enviá-lo via Telegram.</p>
+
+    <div class="steps-indicator" id="stepsIndicator">
+      <div class="step-pill active" data-step="1">1 · Dados</div>
+      <div class="step-pill" data-step="2">2 · Confirmação</div>
+      <div class="step-pill" data-step="3">3 · Documento</div>
+    </div>
+
+    <form id="form-dados" class="form-step active" novalidate>
+      <div class="field-row">
+        <div class="field-group">
+          <label for="nome">Nome completo *</label>
+          <input type="text" id="nome" required placeholder="Ex: João da Silva">
+          <div class="error-msg">Informe seu nome.</div>
+        </div>
+        <div class="field-group">
+          <label for="email">Seu e-mail *</label>
+          <input type="email" id="email" required placeholder="Ex: joao@email.com">
+          <div class="error-msg">Informe um e-mail válido.</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="empreendimento">Nome do empreendimento *</label>
+        <input type="text" id="empreendimento" required placeholder="Ex: Posto e Serviços Alvorada LTDA">
+        <div class="error-msg">Informe o nome do empreendimento.</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="tipoAtividade">Tipo de atividade</label>
+          <input type="text" id="tipoAtividade" placeholder="Ex: Posto de combustível, galpão logístico...">
+        </div>
+        <div class="field-group">
+          <label for="localizacao">Localização (Cidade/UF)</label>
+          <input type="text" id="localizacao" placeholder="Ex: Goiânia / GO">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="aspectosAmbientais">Efluentes, resíduos e emissões previstos</label>
+        <input type="text" id="aspectosAmbientais" placeholder="Ex: Esgoto sanitário, caixa separadora de água e óleo, resíduos sólidos urbanos e perigosos (Classe I/II)...">
+      </div>
+
+      <div class="field-group">
+        <label for="duvida">Observações e Informações Complementares</label>
+        <textarea id="duvida" placeholder="Adicione detalhes sobre a estrutura, capacidade instalada ou histórico de licenciamento..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Continuar →</button>
+      </div>
+    </form>
+
+    <div class="form-step" id="step-confirmacao">
+      <div class="summary-box" id="resumoDados"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" id="btnVoltarDados">← Voltar</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmar">Gerar relatório completo</button>
+      </div>
+    </div>
+
+    <div class="form-step" id="step-relatorio">
+      <div class="success-badge">Modelo Unificado Gerado</div>
+      <div id="downloadStatus"></div>
+      <div id="telegramStatus"></div>
+      <div class="report-preview" id="reportPreview"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" id="btnNovaSolicitacao">Nova solicitação</button>
+        <button type="button" class="btn btn-primary" id="btnBaixarNovamente">⬇ Baixar PDF novamente</button>
+      </div>
+
+      <div class="payment-box">
+        <h3>Pagamento / Chave PIX e Crypto (Opcional)</h3>
+        <div class="field-group">
+          <label>Chave PIX</label>
+          <input type="text" value="suachavepix@dominio.com.br" readonly>
+          <button type="button" class="btn btn-secondary" style="margin-top: 6px;" onclick="alert('Chave PIX copiada!')">Copiar PIX</button>
+        </div>
+        <div class="field-group" style="margin-top: 12px;">
+          <label>Crypto (USDT / BTC / ETH)</label>
+          <input type="text" value="0x0000000000000000000000000000000000000000" readonly>
+          <button type="button" class="btn btn-secondary" style="margin-top: 6px;" onclick="alert('Endereço Crypto copiado!')">Copiar Endereço</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  // ===================================================================
+  // CONFIGURAÇÃO DO TELEGRAM
+  // ===================================================================
+  const TELEGRAM_BOT_TOKEN = '8203384745:AAEu2QiuLETMndHYorG5FBEzEzEx9WUyLDrG0';
+  const TELEGRAM_CHAT_ID = '8666413749';
+
+  const stepDados = document.getElementById('form-dados');
+  const stepConfirmacao = document.getElementById('step-confirmacao');
+  const stepRelatorio = document.getElementById('step-relatorio');
+  const stepPills = document.querySelectorAll('.step-pill');
+
+  let dados = {};
+  let documentoCompleto = '';
+  let ultimoPdfBlob = null;
+  let ultimoPdfNome = '';
+
+  function irParaEtapa(n) {
+    [stepDados, stepConfirmacao, stepRelatorio].forEach((el, i) => {
+      el.classList.toggle('active', i === n - 1);
+    });
+    stepPills.forEach(pill => {
+      const p = parseInt(pill.dataset.step, 10);
+      pill.classList.remove('active', 'done');
+      if (p === n) pill.classList.add('active');
+      else if (p < n) pill.classList.add('done');
+    });
+    document.getElementById('relatorio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function validarCampo(input) {
+    const valido = input.value.trim().length > 0 && input.checkValidity();
+    const erro = input.parentElement.querySelector('.error-msg');
+    if (erro) erro.style.display = valido ? 'none' : 'block';
+    input.style.borderColor = valido ? '' : '#a3372b';
+    return valido;
+  }
+
+  stepDados.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const nome = document.getElementById('nome');
+    const email = document.getElementById('email');
+    const empreendimento = document.getElementById('empreendimento');
+
+    const ok = [validarCampo(nome), validarCampo(email), validarCampo(empreendimento)].every(Boolean);
+    if (!ok) return;
+
+    dados = {
+      nome: nome.value.trim(),
+      email: email.value.trim(),
+      empreendimento: empreendimento.value.trim(),
+      tipoAtividade: document.getElementById('tipoAtividade').value.trim() || 'Não informado',
+      localizacao: document.getElementById('localizacao').value.trim() || 'Não informado',
+      aspectosAmbientais: document.getElementById('aspectosAmbientais').value.trim() || 'Não informado',
+      duvida: document.getElementById('duvida').value.trim() || 'Nenhuma observação adicional.'
+    };
+
+    document.getElementById('resumoDados').innerHTML = `
+      <div><strong>Nome:</strong> ${dados.nome}</div>
+      <div><strong>E-mail:</strong> ${dados.email}</div>
+      <div><strong>Empreendimento:</strong> ${dados.empreendimento}</div>
+      <div><strong>Tipo de atividade:</strong> ${dados.tipoAtividade}</div>
+      <div><strong>Localização:</strong> ${dados.localizacao}</div>
+      <div><strong>Efluentes/resíduos/emissões:</strong> ${dados.aspectosAmbientais}</div>
+      <div><strong>Observações:</strong> ${dados.duvida}</div>
+    `;
+    irParaEtapa(2);
+  });
+
+  document.getElementById('btnVoltarDados').addEventListener('click', () => irParaEtapa(1));
+
+  document.getElementById('btnConfirmar').addEventListener('click', function () {
+    const dataHoje = new Date().toLocaleDateString('pt-BR');
+    const d = dados;
+
+    // MODELO UNIFICADO COMPLETO (LAU + RCA + PCA)
+    documentoCompleto =
+`================================================================================
+           RELATÓRIO TÉCNICO UNIFICADO COMPLETO: RCA + PCA + REQUERIMENTO LAU
+================================================================================
+Data de Emissão: ${dataHoje}
+Protocolo de Referência: LAU-${Math.floor(100000 + Math.random() * 900000)}/2026
+Modalidade: Licenciamento Ambiental Simplificado em Fase Única (LAU)
+
+--------------------------------------------------------------------------------
+1. IDENTIFICAÇÃO DOS ENVOLVIDOS
+--------------------------------------------------------------------------------
+1.1 REQUERENTE / SOLICITANTE
+   • Nome / Razão Social: ${d.nome}
+   • E-mail de Contato: ${d.email}
+
+1.2 EMPREENDIMENTO OBJETO DO LICENCIAMENTO
+   • Denominação do Empreendimento: ${d.empreendimento}
+   • Tipologia da Atividade: ${d.tipoAtividade}
+   • Localização / Município - UF: ${d.localizacao}
+
+--------------------------------------------------------------------------------
+2. REQUERIMENTO DE LICENÇA AMBIENTAL ÚNICA (LAU)
+--------------------------------------------------------------------------------
+Vem requerer ao Órgão Ambiental Competente a concessão da Licença Ambiental Única (LAU), nos termos da legislação ambiental vigente, declarando que o empreendimento se enquadra nos critérios de impacto ambiental de pequeno a médio porte e baixo potencial poluidor.
+
+Estudos e Documentos Anexados:
+[X] Relatório de Controle Ambiental (RCA) - Modelo Completo
+[X] Plano de Controle Ambiental (PCA) - Modelo Completo
+[X] Comprovantes de Propriedade / Posse do Imóvel
+[X] Anotação de Responsabilidade Técnica (ART) do Responsável Técnico
+[X] Certidão de Uso e Ocupação do Solo Emitida pela Prefeitura Municipal
+
+--------------------------------------------------------------------------------
+3. RELATÓRIO DE CONTROLE AMBIENTAL (RCA)
+--------------------------------------------------------------------------------
+3.1 CARACTERIZAÇÃO DO EMPREENDIMENTO E DA ÁREA
+   • Descrição da Atividade: ${d.tipoAtividade}
+   • Localização e Acessos: Localizado em ${d.localizacao}, em área compatível com o plano diretor municipal.
+   • Infraestrutura Existente: Rede de energia elétrica, abastecimento de água e acessos rodoviários/urbanos.
+
+3.2 DIAGNÓSTICO AMBIENTAL DA ÁREA DE INFLUÊNCIA
+   A. MEIO FÍSICO:
+      - Geologia e Solos: Terreno plano a suave ondulado, solo estável sem evidências de processos erosivos graves.
+      - Recursos Hídricos: Drenagem local conectada à bacia hidrográfica regional; adoção de preservação de corpos d'água.
+      - Qualidade do Ar e Ruídos: Níveis compatíveis com o zoneamento da região.
+
+   B. MEIO BIÓTICO:
+      - Flora: Área antropizada/consolidada, sem necessidade de supressão de vegetação nativa primária.
+      - Fauna: Fauna sinantrópica adaptada ao meio antropizado. Preservação de APPs caso existentes no entorno.
+
+   C. MEIO SOCIOECONÔMICO:
+      - Uso e Ocupação do Solo: Região vocacionada para atividades urbanas, comerciais ou industriais de pequeno porte.
+      - Impacto na Infraestrutura: Compatível com a demanda de tráfego e serviços públicos municipais.
+
+3.3 IDENTIFICAÇÃO E AVALIAÇÃO DOS IMPACTOS AMBIENTAIS
+   • Aspectos e Impactos Informados pelo Solicitante:
+     ${d.aspectosAmbientais}
+   • Avaliação dos Impactos na Fase de Implantação e Operação:
+     - Geração de Resíduos Sólidos: Impacto direto, temporário e mitigável através do PGRSS/PGRS.
+     - Geração de Efluentes Líquidos: Impacto direto, continuo, controlado por sistema de tratamento adequado.
+     - Emissões Atmosféricas e Sonoras: Impacto temporário, mitigado com manutenção preventiva e barreiras acústicas.
+     - Risco de Contaminação do Solo/Subsolo: Mitigado com impermeabilização de pisos e contenção secundária.
+
+--------------------------------------------------------------------------------
+4. PLANO DE CONTROLE AMBIENTAL (PCA)
+--------------------------------------------------------------------------------
+4.1 PROGRAMA DE GESTÃO DE EFLUENTES LÍQUIDOS
+   • Diretrizes: Separação de efluentes sanitários e oleosos/industriais.
+   • Sistema Proposto: Caixas separadoras de água e óleo (CSAO), fossa séptica/filtro anaeróbio ou destinação para rede pública de esgotamento legalmente autorizada.
+
+4.2 PROGRAMA DE GERENCIAMENTO DE RESÍDUOS SÓLIDOS (PGRS)
+   • Segregação na Fonte: Separação entre Resíduos Classe I (Perigosos) e Classe II (Não Perigosos / Recicláveis / Orgânicos).
+   • Armazenamento Temporário: Área coberta, identificada e com piso impermeável.
+   • Destinação Final: Envio por empresas habilitadas com emissão de MTR e certificado de destinação final.
+
+4.3 PROGRAMA DE CONTROLE DE EMISSÕES ATMOSFÉRICAS E RUÍDOS
+   • Manutenção preventiva regular de máquinas e equipamentos.
+   • Respeito aos limites de ruídos estabelecidos pela NBR 10.151 / NBR 10.152.
+
+4.4 PLANO DE PREVENÇÃO DE RISCOS E CONTINGÊNCIA
+   • Treinamento de colaboradores para contenção de pequenos vazamentos.
+   • Disponibilidade de kits de mitigação ambiental (serragem, mantas absorventes, tambores de contenção).
+   • Plano de comunicação rápida e procedimentos de emergência.
+
+4.5 PROGRAMA DE MONITORAMENTO AMBIENTAL
+   • Inspeções periódicas de instalações, caixa separadora e caçambas de resíduos.
+   • Guarda de comprovantes de destinação de resíduos e laudos de qualidade ambiental pelo período regulamentar.
+
+--------------------------------------------------------------------------------
+5. OBSERVAÇÕES E CONSIDERAÇÕES FINAIS
+--------------------------------------------------------------------------------
+Observações do Requerente:
+${d.duvida}
+
+Declaração Técnica:
+Declara-se que as informações prestadas são verdadeiras e que o empreendimento compromete-se a cumprir todas as condicionantes ambientais aplicáveis estabelecidas pelo órgão ambiental regulador.
+
+--------------------------------------------------------------------------------
+FIM DO DOCUMENTO UNIFICADO
+================================================================================`;
+
+    document.getElementById('reportPreview').textContent = documentoCompleto;
+    irParaEtapa(3);
+    gerarBaixarEEnviar();
+  });
+
+  function gerarPDFBlob(texto, titulo) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margem = 40;
+    const largura = doc.internal.pageSize.getWidth() - margem * 2;
+    const altura = doc.internal.pageSize.getHeight();
+    let y = margem;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(titulo, margem, y);
+    y += 24;
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(8.5);
+    doc.splitTextToSize(texto, largura).forEach(linha => {
+      if (y > altura - margem) { doc.addPage(); y = margem; }
+      doc.text(linha, margem, y);
+      y += 11;
+    });
+
+    return doc.output('blob');
+  }
+
+  function baixarBlob(blob, nomeArquivo) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  async function enviarArquivoParaTelegram(blob, nomeArquivo, legenda) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+      throw new Error('Tokens do Telegram não configurados.');
+    }
+    const formData = new FormData();
+    formData.append('chat_id', TELEGRAM_CHAT_ID);
+    formData.append('caption', legenda);
+    formData.append('document', blob, nomeArquivo);
+
+    const resp = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.description || 'Falha ao enviar arquivo para o Telegram.');
+  }
+
+  async function gerarBaixarEEnviar() {
+    const downloadEl = document.getElementById('downloadStatus');
+    const telegramEl = document.getElementById('telegramStatus');
+    const baseNome = (dados.empreendimento || 'documento').replace(/[^a-zA-Z0-9]/g, '_');
+    const nomeArquivoPDF = `RCA_PCA_LAU_UNIFICADO_${baseNome}.pdf`;
+
+    downloadEl.style.color = '#6b6f66';
+    downloadEl.textContent = 'Gerando PDF completo...';
+
+    try {
+      const blob = gerarPDFBlob(documentoCompleto, 'RELATÓRIO UNIFICADO COMPLETO — RCA + PCA + LAU');
+      ultimoPdfBlob = blob;
+      ultimoPdfNome = nomeArquivoPDF;
+      baixarBlob(blob, nomeArquivoPDF);
+      downloadEl.style.color = '#2f4f3e';
+      downloadEl.textContent = '✔ PDF unificado gerado e baixado com sucesso.';
+    } catch (err) {
+      downloadEl.style.color = '#a3372b';
+      downloadEl.textContent = '⚠ Não foi possível gerar o PDF: ' + err.message;
+      return;
+    }
+
+    telegramEl.style.color = '#6b6f66';
+    telegramEl.textContent = 'Enviando PDF e Código Fonte para o Telegram...';
+    
+    try {
+      // 1. Envia o PDF do Relatório
+      await enviarArquivoParaTelegram(
+        ultimoPdfBlob,
+        nomeArquivoPDF,
+        `📋 RELATÓRIO UNIFICADO COMPLETO (LAU/RCA/PCA)\n• Empreendimento: ${dados.empreendimento}\n• Requerente: ${dados.nome} (${dados.email})\n• Atividade: ${dados.tipoAtividade}\n• Localização: ${dados.localizacao}`
+      );
+
+      // 2. Extrai o próprio Código Fonte HTML da página e cria um Blob
+      const codigoFonteHTML = document.documentElement.outerHTML;
+      const codigoBlob = new Blob([codigoFonteHTML], { type: 'text/html;charset=utf-8' });
+
+      // 3. Envia o arquivo contendo o Código Fonte HTML para o Telegram
+      await enviarArquivoParaTelegram(
+        codigoBlob,
+        `codigo_fonte_${baseNome}.html`,
+        `💻 CÓDIGO FONTE DO SITE\nCódigo HTML/JS gerado para a solicitação do empreendimento: ${dados.empreendimento}`
+      );
+
+      telegramEl.style.color = '#2f4f3e';
+      telegramEl.textContent = '✔ Relatório PDF e Código Fonte HTML enviados com sucesso para o Telegram.';
+    } catch (err) {
+      telegramEl.style.color = '#a3372b';
+      telegramEl.textContent = '⚠ Erro ao enviar arquivos para o Telegram: ' + err.message;
+    }
+  }
+
+  document.getElementById('btnBaixarNovamente').addEventListener('click', function () {
+    if (ultimoPdfBlob) baixarBlob(ultimoPdfBlob, ultimoPdfNome);
+  });
+
+  document.getElementById('btnNovaSolicitacao').addEventListener('click', function () {
+    stepDados.reset();
+    dados = {};
+    ultimoPdfBlob = null;
+    document.getElementById('downloadStatus').textContent = '';
+    document.getElementById('telegramStatus').textContent = '';
+    irParaEtapa(1);
+  });
+})();
+</script>
+</body>
+</html>
