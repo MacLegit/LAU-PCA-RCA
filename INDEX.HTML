@@ -14,6 +14,7 @@
 --forest:#2f4f3e;
 --forest-soft:#e9efe9;
 --muted:#6b6f66;
+--danger:#a3372b;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{
@@ -158,7 +159,7 @@ border-color:var(--forest);
 .field-group textarea{resize:vertical;min-height:80px;}
 .field-row{display:flex;gap:14px;flex-wrap:wrap;}
 .field-row .field-group{flex:1 1 220px;}
-.error-msg{color:#a3372b;font-size:0.8rem;margin-top:4px;display:none;}
+.error-msg{color:var(--danger);font-size:0.8rem;margin-top:4px;display:none;}
 
 .btn{
 font-family:inherit;
@@ -215,14 +216,67 @@ margin-bottom:16px;
 
 .payment-box {
 margin-top: 30px;
-padding: 20px;
+padding: 24px;
 border: 1px solid var(--line);
 border-radius: 4px;
 background: #fff;
+text-align: center;
 }
 .payment-box h3 {
 font-size: 1rem;
+margin-bottom: 16px;
+color: var(--forest);
+}
+.pix-qr {
+width: 200px;
+height: 200px;
+margin: 0 auto 16px;
+border: 1px solid var(--line);
+border-radius: 4px;
+}
+.pix-timer {
+font-family: 'IBM Plex Mono', monospace;
+font-size: 1.4rem;
+font-weight: 600;
+color: var(--danger);
+margin-bottom: 8px;
+}
+.pix-timer-label {
+font-size: 0.85rem;
+color: var(--muted);
+margin-bottom: 16px;
+}
+.pix-key-box {
+display: flex;
+gap: 8px;
+align-items: center;
+justify-content: center;
 margin-bottom: 12px;
+}
+.pix-key-box input {
+font-family: 'IBM Plex Mono', monospace;
+font-size: 0.85rem;
+padding: 8px 12px;
+border: 1px solid var(--line);
+border-radius: 3px;
+width: 280px;
+text-align: center;
+background: var(--forest-soft);
+}
+.crypto-box {
+margin-top: 16px;
+padding-top: 16px;
+border-top: 1px solid var(--line);
+}
+.manual-notice {
+background: var(--forest-soft);
+border-left: 3px solid var(--forest);
+padding: 14px 16px;
+margin: 20px 0;
+font-size: 0.92rem;
+color: var(--ink);
+}
+.manual-notice strong {
 color: var(--forest);
 }
 
@@ -233,6 +287,7 @@ main{padding:32px 16px 0;}
 .card,.form-section{padding:24px 18px;}
 .btn-row{flex-direction:column;}
 .btn{width:100%;text-align:center;}
+.pix-key-box input{width:100%;}
 }
 </style>
 </head>
@@ -240,6 +295,7 @@ main{padding:32px 16px 0;}
 
 <header>
 <div class="header-inner">
+<div class="protocol">Protocolo Ambiental</div>
 <h1>LAU, RCA e PCA</h1>
 <p class="subtitle">Licenciamento ambiental simplificado em fase única — Modelo Unificado Completo</p>
 <nav>
@@ -292,12 +348,12 @@ main{padding:32px 16px 0;}
 
 <section class="form-section" id="relatorio">
 <h2>Solicitar relatório unificado completo</h2>
-<p class="form-lead">Preencha os dados do empreendimento para gerar o Modelo Unificado Completo (RCA + PCA + LAU). Após a verificação do pagamento no Telegram, o PDF será enviado por e-mail.</p>
+<p class="form-lead">Preencha os dados do empreendimento para gerar o Modelo Unificado Completo (RCA + PCA + LAU). Após a confirmação do pagamento, o PDF será enviado manualmente para o seu e-mail em até 25 minutos.</p>
 
 <div class="steps-indicator" id="stepsIndicator">
 <div class="step-pill active" data-step="1">1 · Dados</div>
 <div class="step-pill" data-step="2">2 · Confirmação</div>
-<div class="step-pill" data-step="3">3 · Documento</div>
+<div class="step-pill" data-step="3">3 · Pagamento</div>
 </div>
 
 <form id="form-dados" class="form-step active" novalidate>
@@ -350,32 +406,45 @@ main{padding:32px 16px 0;}
 <div class="summary-box" id="resumoDados"></div>
 <div class="btn-row">
 <button type="button" class="btn btn-secondary" id="btnVoltarDados">← Voltar</button>
-<button type="button" class="btn btn-primary" id="btnConfirmar">Gerar relatório</button>
+<button type="button" class="btn btn-primary" id="btnConfirmar">Confirmar e ir para pagamento</button>
 </div>
 </div>
 
 <div class="form-step" id="step-relatorio">
-<div class="success-badge">Modelo Unificado Gerado</div>
-<div id="downloadStatus"></div>
-<div id="telegramStatus"></div>
-<div class="report-preview" id="reportPreview"></div>
-<div class="btn-row">
-<button type="button" class="btn btn-secondary" id="btnNovaSolicitacao">Nova solicitação</button>
-<button type="button" class="btn btn-primary" id="btnAbrirEmail">Preparar envio por e-mail</button>
+<div class="success-badge">Solicitação Registrada</div>
+
+<div class="manual-notice">
+<strong>📧 Envio manual do relatório</strong><br>
+Seu PDF será preparado e enviado manualmente para o e-mail informado em até <strong>25 minutos</strong> após a confirmação do pagamento.
 </div>
 
+<div id="downloadStatus"></div>
+<div class="report-preview" id="reportPreview"></div>
+
 <div class="payment-box">
-<h3>Pagamento / Chave PIX e Crypto (Opcional)</h3>
-<div class="field-group">
-<label>Chave PIX</label>
-<input type="text" value="b5feccc4-17c6-42e0-ab20-04b441ba0ab2" readonly>
-<button type="button" class="btn btn-secondary" style="margin-top: 6px;" onclick="alert('Chave PIX copiada!')">Copiar PIX</button>
+<h3>💳 Pagamento via PIX</h3>
+<div style="font-size:2rem;font-weight:700;color:var(--forest);margin-bottom:8px;">R$ 1.369,99</div>
+<div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Valor único — Modelo Unificado Completo (RCA + PCA + LAU)</div>
+<img id="pixQr" class="pix-qr" src="" alt="QR Code PIX">
+<div class="pix-timer" id="pixTimer">10:00</div>
+<div class="pix-timer-label">Este QR Code expira em 25 minutos</div>
+
+<div class="pix-key-box">
+<input type="text" id="pixInput" value="b5feccc4-17c6-42e0-ab20-04b441ba0ab2" readonly>
+<button type="button" class="btn btn-secondary" id="btnCopiarPix" style="padding:8px 14px;font-size:0.85rem;">Copiar</button>
 </div>
-<div class="field-group" style="margin-top: 12px;">
-<label>Crypto (USDT / BTC / ETH)</label>
-<input type="text" value="0x0000000000000000000000000000000000000000" readonly>
-<button type="button" class="btn btn-secondary" style="margin-top: 6px;" onclick="alert('Endereço Crypto copiado!')">Copiar Endereço</button>
+
+<div class="crypto-box">
+<h3 style="font-size:0.95rem;margin-bottom:10px;color:var(--muted);">Crypto (USDT / BTC / ETH)</h3>
+<div class="pix-key-box">
+<input type="text" id="cryptoInput" value="0x0000000000000000000000000000000000000000" readonly>
+<button type="button" class="btn btn-secondary" id="btnCopiarCrypto" style="padding:8px 14px;font-size:0.85rem;">Copiar</button>
 </div>
+</div>
+</div>
+
+<div class="btn-row" style="margin-top:24px;">
+<button type="button" class="btn btn-secondary" id="btnNovaSolicitacao">Nova solicitação</button>
 </div>
 </div>
 </section>
@@ -384,8 +453,8 @@ main{padding:32px 16px 0;}
 
 <script>
 (function () {
-const TELEGRAM_BOT_TOKEN = '8203384745:AAEu2QiuLETMndHYorG5FBEzEzEx9WUyLDrG0';
-const TELEGRAM_CHAT_ID = '8666413749';
+const CHAVE_PIX = 'b5feccc4-17c6-42e0-ab20-04b441ba0ab2';
+const CHAVE_CRYPTO = '0x0000000000000000000000000000000000000000';
 
 const stepDados = document.getElementById('form-dados');
 const stepConfirmacao = document.getElementById('step-confirmacao');
@@ -394,8 +463,7 @@ const stepPills = document.querySelectorAll('.step-pill');
 
 let dados = {};
 let documentoCompleto = '';
-let ultimoPdfBlob = null;
-let ultimoPdfNome = '';
+let timerInterval = null;
 
 function irParaEtapa(n) {
 [stepDados, stepConfirmacao, stepRelatorio].forEach((el, i) => {
@@ -418,6 +486,203 @@ input.style.borderColor = valido ? '' : '#a3372b';
 return valido;
 }
 
+function gerarRelatorio() {
+const hoje = new Date().toLocaleDateString('pt-BR');
+
+documentoCompleto = `================================================================================
+MODELO UNIFICADO COMPLETO — RCA + PCA + LAU
+Licenciamento Ambiental Simplificado em Fase Única
+================================================================================
+
+DATA DE EMISSÃO: ${hoje}
+
+--------------------------------------------------------------------------------
+1. IDENTIFICAÇÃO DO REQUERENTE
+--------------------------------------------------------------------------------
+Nome: ${dados.nome}
+E-mail: ${dados.email}
+
+--------------------------------------------------------------------------------
+2. CARACTERIZAÇÃO DO EMPREENDIMENTO
+--------------------------------------------------------------------------------
+Razão Social / Nome: ${dados.empreendimento}
+Tipo de Atividade: ${dados.tipoAtividade}
+Localização: ${dados.localizacao}
+
+--------------------------------------------------------------------------------
+3. ASPECTOS AMBIENTAIS PREVISTOS
+--------------------------------------------------------------------------------
+${dados.aspectosAmbientais}
+
+--------------------------------------------------------------------------------
+4. RELATÓRIO DE CONTROLE AMBIENTAL (RCA)
+--------------------------------------------------------------------------------
+4.1 Meio Físico
+- Localização e caracterização do entorno
+- Uso e ocupação do solo
+- Hidrologia e recursos hídricos superficiais e subterrâneos
+- Clima e qualidade do ar
+- Geomorfologia e pedologia
+
+4.2 Meio Biótico
+- Vegetação e fitofisionomia regional
+- Fauna silvestre observada ou potencial
+- Áreas de preservação permanente (APPs) e reserva legal
+
+4.3 Meio Socioeconômico
+- Demografia e infraestrutura urbana
+- Economia local e emprego
+- Patrimônio histórico, cultural e arqueológico
+
+4.4 Identificação e Avaliação de Impactos
+- Impactos na fase de instalação
+- Impactos na fase de operação
+- Medidas mitigadoras e compensatórias
+
+--------------------------------------------------------------------------------
+5. PLANO DE CONTROLE AMBIENTAL (PCA)
+--------------------------------------------------------------------------------
+5.1 Programas Ambientais
+- Gestão de efluentes líquidos
+- Gestão de resíduos sólidos (classe I e II)
+- Controle de emissões atmosféricas
+- Monitoramento de ruído e vibrações
+- Gestão de recursos hídricos
+- Proteção de áreas verdes e APPs
+
+5.2 Plano de Monitoramento Ambiental
+- Parâmetros, frequência e pontos de amostragem
+- Responsáveis técnicos e ART
+
+5.3 Plano de Contingência
+- Procedimentos emergenciais
+- Equipamentos de proteção e combate
+- Comunicação com órgãos competentes
+
+5.4 Cronograma de Execução
+- Fase de instalação
+- Fase de operação
+- Prazos de implementação dos programas
+
+--------------------------------------------------------------------------------
+6. CONCLUSÃO E PARECER TÉCNICO
+--------------------------------------------------------------------------------
+O empreendimento descrito enquadra-se na modalidade de Licença Ambiental Única
+(LAU), por se tratar de atividade de menor complexidade e menor potencial
+poluidor, conforme Resolução CONAMA 237/1997 e legislação estadual aplicável.
+
+O presente Modelo Unificado (RCA + PCA) atende aos requisitos mínimos para
+instrução do processo de licenciamento ambiental simplificado.
+
+--------------------------------------------------------------------------------
+7. OBSERVAÇÕES COMPLEMENTARES
+--------------------------------------------------------------------------------
+${dados.duvida}
+
+================================================================================
+DOCUMENTO GERADO AUTOMATICAMENTE — MODELO UNIFICADO LAU/RCA/PCA
+================================================================================`;
+
+return documentoCompleto;
+}
+
+function gerarPdf() {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+// Configurações
+const margem = 20;
+let y = 20;
+const largura = 210 - (margem * 2);
+
+// Título
+doc.setFont('helvetica', 'bold');
+doc.setFontSize(14);
+doc.text('MODELO UNIFICADO COMPLETO — RCA + PCA + LAU', 105, y, { align: 'center' });
+y += 10;
+doc.setFontSize(10);
+doc.setFont('helvetica', 'normal');
+doc.text('Licenciamento Ambiental Simplificado em Fase Única', 105, y, { align: 'center' });
+y += 12;
+
+// Linha separadora
+doc.setDrawColor(47, 79, 62);
+doc.setLineWidth(0.5);
+doc.line(margem, y, 210 - margem, y);
+y += 8;
+
+const linhas = documentoCompleto.split('\n');
+
+doc.setFontSize(9);
+linhas.forEach(linha => {
+if (y > 280) {
+doc.addPage();
+y = 20;
+}
+
+if (linha.startsWith('===')) {
+doc.setFont('helvetica', 'bold');
+doc.setDrawColor(47, 79, 62);
+doc.setLineWidth(0.3);
+doc.line(margem, y, 210 - margem, y);
+y += 4;
+} else if (linha.match(/^\d+\./)) {
+doc.setFont('helvetica', 'bold');
+doc.setTextColor(47, 79, 62);
+const partes = doc.splitTextToSize(linha, largura);
+doc.text(partes, margem, y);
+y += (partes.length * 4.5) + 2;
+doc.setTextColor(0, 0, 0);
+} else if (linha.startsWith('-')) {
+doc.setFont('helvetica', 'normal');
+const partes = doc.splitTextToSize('  ' + linha, largura);
+doc.text(partes, margem, y);
+y += (partes.length * 4);
+} else if (linha.trim() === '') {
+y += 3;
+} else {
+doc.setFont('helvetica', 'normal');
+const partes = doc.splitTextToSize(linha, largura);
+doc.text(partes, margem, y);
+y += (partes.length * 4.5);
+}
+
+doc.setFont('helvetica', 'normal');
+doc.setTextColor(0, 0, 0);
+});
+
+return doc;
+}
+
+function iniciarTimerPix() {
+const timerEl = document.getElementById('pixTimer');
+let segundos = 25 * 60; // 25 minutos
+
+if (timerInterval) clearInterval(timerInterval);
+
+timerInterval = setInterval(() => {
+segundos--;
+const min = String(Math.floor(segundos / 60)).padStart(2, '0');
+const seg = String(segundos % 60).padStart(2, '0');
+timerEl.textContent = `${min}:${seg}`;
+
+if (segundos <= 0) {
+clearInterval(timerInterval);
+timerEl.textContent = 'EXPIRADO';
+timerEl.style.color = '#a3372b';
+document.getElementById('pixQr').style.opacity = '0.3';
+document.getElementById('pixQr').style.filter = 'grayscale(100%)';
+}
+}, 1000);
+}
+
+function gerarQrCodePix() {
+// Gera QR Code com a chave PIX via API pública
+const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(CHAVE_PIX)}`;
+document.getElementById('pixQr').src = qrUrl;
+}
+
+// Evento: envio do formulário de dados
 stepDados.addEventListener('submit', function (e) {
 e.preventDefault();
 const nome = document.getElementById('nome');
@@ -449,6 +714,71 @@ document.getElementById('resumoDados').innerHTML = `
 irParaEtapa(2);
 });
 
+// Evento: voltar para dados
 document.getElementById('btnVoltarDados').addEventListener('click', () => irParaEtapa(1));
 
-document.getElementBy
+// Evento: confirmar e ir para pagamento
+document.getElementById('btnConfirmar').addEventListener('click', function () {
+// Gera relatório
+gerarRelatorio();
+
+// Mostra preview
+document.getElementById('reportPreview').textContent = documentoCompleto;
+
+// Gera e disponibiliza PDF
+const doc = gerarPdf();
+const pdfBlob = doc.output('blob');
+const pdfUrl = URL.createObjectURL(pdfBlob);
+
+const downloadStatus = document.getElementById('downloadStatus');
+downloadStatus.innerHTML = `<p style='color:var(--forest);font-weight:600;margin-bottom:12px;'>✓ Solicitação registrada com sucesso!</p>`;
+
+// Gera QR Code e inicia timer
+gerarQrCodePix();
+iniciarTimerPix();
+
+irParaEtapa(3);
+});
+
+// Evento: nova solicitação
+document.getElementById('btnNovaSolicitacao').addEventListener('click', function () {
+stepDados.reset();
+document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+document.querySelectorAll('input, textarea').forEach(i => i.style.borderColor = '');
+if (timerInterval) clearInterval(timerInterval);
+document.getElementById('pixTimer').textContent = '25:00';
+document.getElementById('pixTimer').style.color = '';
+document.getElementById('pixQr').src = '';
+document.getElementById('pixQr').style.opacity = '1';
+document.getElementById('pixQr').style.filter = 'none';
+dados = {};
+documentoCompleto = '';
+irParaEtapa(1);
+});
+
+// Copiar PIX
+document.getElementById('btnCopiarPix').addEventListener('click', function () {
+const input = document.getElementById('pixInput');
+input.select();
+navigator.clipboard.writeText(input.value).then(() => {
+const original = this.textContent;
+this.textContent = 'Copiado!';
+setTimeout(() => this.textContent = original, 1500);
+});
+});
+
+// Copiar Crypto
+document.getElementById('btnCopiarCrypto').addEventListener('click', function () {
+const input = document.getElementById('cryptoInput');
+input.select();
+navigator.clipboard.writeText(input.value).then(() => {
+const original = this.textContent;
+this.textContent = 'Copiado!';
+setTimeout(() => this.textContent = original, 1500);
+});
+});
+
+})();
+</script>
+</body>
+</html>
